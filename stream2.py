@@ -12,6 +12,9 @@ from io import BytesIO
 import sys
 import time
 import xlsxwriter
+import plotly
+import plotly.graph_objects as go
+
 
 
 
@@ -83,7 +86,7 @@ def processFiles(df1, df2, dfProv):
         #print(dfP.columns)
         dfP = dfP.query('CTG_x=="D" and BAGGING_PRIORITIES.notnull()')
         dfP.replace('ZSELF-ST', 'ZSELF', regex=True)
-        dfP.to_pickle("dFp.pkl") 
+        #dfP.to_pickle("dFp.pkl") 
 
         dfP.loc[dfP.Customer_Code == 'ZSELF', 'BAGGING_PRIORITIES'] = "ZSELF"
         dfP.loc[dfP.Customer_Code == 'ZSELF-ST', 'BAGGING_PRIORITIES'] = "ZSELF"
@@ -91,7 +94,7 @@ def processFiles(df1, df2, dfProv):
         #dfP.to_excel("Bagging List with Priority.xlsx")
         filteredDF1 = dfP[["RmCode", "Sz","Lt","Wdth","Total_Req(cts)","Stock(cts)","Net(cts)","RmQty","BAGGING_PRIORITIES"]].copy()
         filteredDF = filteredDF1.append(dfProv, ignore_index=True)
-        print(filteredDF)
+        #print(filteredDF)
 
         filteredDF["BAGGING_PRIORITIES"] = filteredDF["BAGGING_PRIORITIES"].fillna("None")
         filteredDF["BAGGING_PRIORITIES"] = filteredDF["BAGGING_PRIORITIES"].astype(str)
@@ -154,10 +157,57 @@ def processFiles(df1, df2, dfProv):
          #   filteredDF["StockPcs"] = filteredDF["Stock(cts)"] / ((filteredDF["Total_Req(cts)"]/filteredDF["RmQty"]).round(2))
         #   filteredDF["StockPcs"] = filteredDF["Stock(cts)"] / ((filteredDF["Total_Req(cts)"]/filteredDF["RmQty"]).round(1))
 
-        filteredDF.loc[(filteredDF['p'] < 0.01) , 'StockPcs'] = filteredDF["Stock(cts)"] / ((filteredDF["Total_Req(cts)"]/filteredDF["RmQty"]).round(3))
-        filteredDF.loc[(filteredDF['p'] >= 0.01) & (filteredDF['p'] <= 0.09) , 'StockPcs'] = filteredDF["Stock(cts)"] / ((filteredDF["Total_Req(cts)"]/filteredDF["RmQty"]).round(2))
-        filteredDF.loc[(filteredDF['p'] >0.09) , 'StockPcs'] = filteredDF["Stock(cts)"] / ((filteredDF["Total_Req(cts)"]/filteredDF["RmQty"]).round(1))
 
+        filteredDF.loc[(filteredDF['p'] >0.01) & (filteredDF['p'] <= 0.09) , 'StockPcs'] = filteredDF["Stock(cts)"] / ((filteredDF["Total_Req(cts)"]/filteredDF["RmQty"]).round(2))
+        filteredDF.loc[(filteredDF['p'] >0.09) , 'StockPcs'] = filteredDF["Stock(cts)"] / ((filteredDF["Total_Req(cts)"]/filteredDF["RmQty"]).round(2))
+
+
+        filteredDF.loc[(filteredDF['Sz'] == 0.04) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.003
+        filteredDF.loc[(filteredDF['Sz'] == 0.03) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.004
+        filteredDF.loc[(filteredDF['Sz'] == 0.02) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.005
+        filteredDF.loc[(filteredDF['Sz'] == 0.01) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.006
+        filteredDF.loc[(filteredDF['Sz'] == 1) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.007
+        filteredDF.loc[(filteredDF['Sz'] == 1.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.007
+        filteredDF.loc[(filteredDF['Sz'] == 2) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.008
+        filteredDF.loc[(filteredDF['Sz'] == 2.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.009
+        filteredDF.loc[(filteredDF['Sz'] == 3) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.01
+        filteredDF.loc[(filteredDF['Sz'] == 3.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.012
+        filteredDF.loc[(filteredDF['Sz'] == 4) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.013
+        filteredDF.loc[(filteredDF['Sz'] == 4.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.015
+
+        filteredDF.loc[(filteredDF['Sz'] == 5) & (filteredDF['Lt'] == 0), 'StockPcs'] = filteredDF["Stock(cts)"] / 0.016
+        
+        filteredDF.loc[(filteredDF['Sz'] == 5.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.018
+        filteredDF.loc[(filteredDF['Sz'] == 6) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.02
+        filteredDF.loc[(filteredDF['Sz'] == 6.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.025
+
+        filteredDF.loc[(filteredDF['Sz'] == 7) & (filteredDF['Lt'] == 0), 'StockPcs'] = filteredDF["Stock(cts)"] / 0.03
+
+        filteredDF.loc[(filteredDF['Sz'] == 7.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.035
+        filteredDF.loc[(filteredDF['Sz'] == 8) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.04
+
+        filteredDF.loc[(filteredDF['Sz'] == 8.5) & (filteredDF['Lt'] == 0), 'StockPcs'] = filteredDF["Stock(cts)"] / 0.045
+
+        filteredDF.loc[(filteredDF['Sz'] == 9) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.05
+        filteredDF.loc[(filteredDF['Sz'] == 9.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.055
+        filteredDF.loc[(filteredDF['Sz'] == 10) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.06
+        filteredDF.loc[(filteredDF['Sz'] == 10.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.07   
+        filteredDF.loc[(filteredDF['Sz'] == 11) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.08
+        filteredDF.loc[(filteredDF['Sz'] == 11.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.09
+        filteredDF.loc[(filteredDF['Sz'] == 12) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.1
+        filteredDF.loc[(filteredDF['Sz'] == 12.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.11
+        filteredDF.loc[(filteredDF['Sz'] == 13) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.12
+        filteredDF.loc[(filteredDF['Sz'] == 13.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.13
+
+
+
+        
+
+
+
+
+
+        
 
         filteredDF["StockPcs"] = filteredDF["StockPcs"].round(0)
        
@@ -201,7 +251,7 @@ def processFiles(df1, df2, dfProv):
         unPivot["DiffPROVISION"] = 0
 
 
-        #print(unPivot.loc[unPivot['Sz'] == 0.04])
+        print(unPivot.loc[unPivot['Sz'] ==0.04])
 
 
         unPivot.loc[unPivot['NetToBuy'] <= 0, ['RmQty', '1+COD','ANAD','SJMG','ZSELF','1+', "1","2","3","4","5","6","PROVISION"]] = 0
@@ -387,6 +437,7 @@ c29, c30, c31 = st.columns([1, 6, 1])
 
 with c30:
 
+    st.header("Office File Upload")
     uploaded_file = st.file_uploader(
         "Upload Office File",
         key="1",
@@ -412,7 +463,8 @@ with c30:
 
         st.stop()
 
-
+    st.header("Factory File Upload")
+  
     uploaded_file2 = st.file_uploader(
         "Upload Factory File",
         key="2",
@@ -438,6 +490,7 @@ with c30:
 
         st.stop()
     
+    st.header("Provision File Upload")
     uploaded_file3 = st.file_uploader(
         "Upload Provision File",
         key="3",
@@ -490,10 +543,28 @@ df1 = df.reset_index()
 
 selection = aggrid_interactive_table(df1)
 
-if selection:
-    st.write("You selected:")
-    st.json(selection["selected_rows"])
+from matplotlib import pyplot as plt
 
+
+
+testDF = df1.copy()
+testDF['Shape'] = 'Other'
+testDF['Shape'] = np.where(testDF.RmCode.str.startswith(('MQ')),'MQ',testDF.Shape)
+testDF['Shape'] = np.where(testDF.RmCode.str.startswith(('PS')),'PS', testDF.Shape)
+testDF['Shape'] = np.where(testDF.RmCode.str.startswith(('RD')),'RD', testDF.Shape)
+testDF = testDF[['Shape','RmQty']]
+
+
+fig = go.Figure(
+    go.Pie(
+    labels = testDF['Shape'],
+    values = testDF['RmQty'],
+    hoverinfo = "label+percent",
+    textinfo = "value"
+))
+
+st.header("Shape Wise")
+st.plotly_chart(fig)
 
 
 gb = GridOptionsBuilder.from_dataframe(pointerDF)
