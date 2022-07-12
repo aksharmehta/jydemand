@@ -390,7 +390,7 @@ def processFiles(df1, df2, dfProv):
         unPivot.loc[(unPivot['PROVISION'] < 0),"PROVISION"] = 0
         unPivot.loc[(unPivot['PROVISION'] > 0) & (unPivot['DiffPROVISION'] < 0),"StockPcs"] = 0
 
-        print(unPivot.loc[unPivot['Lt'] ==2])
+        #print(unPivot.loc[unPivot['Lt'] ==2])
 
 
         unPivot1 = unPivot.query('RmQty > 0 and RmCode != "IGNORE"')
@@ -540,7 +540,7 @@ writer.close()
 
 output.seek(0)
 
-st.header("Click the button below to download the Demand File:")
+st.subheader("Click the button below to download the Demand File:")
 st.download_button(
     label="Download Demand File",
     data=output.getvalue(),
@@ -549,7 +549,19 @@ st.download_button(
 
 df1 = df.reset_index()
 
-selection = aggrid_interactive_table(df1)
+df2 = df1.copy()
+column_names = ['1+COD','ANAD','SJMG','ZSELF','1+', "1","2","3","4","5","6","PROVISION"]
+df2['Sum'] = df2[column_names].sum(axis=1)
+df2['Check'] = df2['RmQty']-df2['Sum']
+
+checkDF = df2.query("Check > 0")
+
+st.header("Potential errors to check: ")
+st.dataframe(checkDF)
+
+
+
+
 
 from matplotlib import pyplot as plt
 
@@ -571,10 +583,61 @@ fig = go.Figure(
     textinfo = "value"
 ))
 
-st.header("Shape Wise")
+st.subheader("Shape Wise")
 st.plotly_chart(fig)
 
 
+
+
+
+st.subheader('Demand Preview:')
+
+
+gb = GridOptionsBuilder.from_dataframe(df1)
+# enables pivoting on all columns, however i'd need to change ag grid to allow export of pivoted/grouped data, however it select/filters groups
+gb.configure_default_column(enablePivot=True, enableValue=True, enableRowGroup=True)
+gb.configure_selection(selection_mode="multiple", use_checkbox=True)
+gb.configure_side_bar()  # side_bar is clearly a typo :) should by sidebar
+gridOptions = gb.build()
+
+st.success(
+    f"""
+        💡 Tip! Hold the shift key when selecting rows to select multiple rows at once!
+        """
+)
+
+
+df1.set_index(['RmCode', 'Sz', 'Lt', 'Wdth', 'StockPcs'])
+response = AgGrid(
+    df1,
+    gridOptions=gridOptions,
+    enable_enterprise_modules=True,
+    update_mode=GridUpdateMode.MODEL_CHANGED,
+    data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
+    fit_columns_on_grid_load=False,
+)
+
+sel1 = pd.DataFrame(response["selected_rows"])
+colOrder = ['RmCode',   'Sz'  , 'Lt' , 'Wdth' , 'StockPcs' , 'RmQty' , '1+COD' , 'ANAD' , 'SJMG' , 'ZSELF'  , '1+' ,   '1'  ,  '2'   , '3'  ,  '4'   , '5' ,   '6',  'PROVISION']
+sel1 = sel1[colOrder]
+st.subheader("Filtered data will appear below 👇 ")
+st.text("")
+
+st.table(sel1)
+st.text("")
+
+c29, c30, c31 = st.columns([1, 1, 2])
+
+
+
+
+
+
+
+
+st.subheader('Pointer Preview:')
+
+#print(pointerDF.index)
 gb = GridOptionsBuilder.from_dataframe(pointerDF)
 # enables pivoting on all columns, however i'd need to change ag grid to allow export of pivoted/grouped data, however it select/filters groups
 gb.configure_default_column(enablePivot=True, enableValue=True, enableRowGroup=True)
