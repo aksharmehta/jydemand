@@ -619,7 +619,8 @@ response = AgGrid(
 
 sel1 = pd.DataFrame(response["selected_rows"])
 colOrder = ['RmCode',   'Sz'  , 'Lt' , 'Wdth' , 'StockPcs' , 'RmQty' , '1+COD' , 'ANAD' , 'SJMG' , 'ZSELF'  , '1+' ,   '1'  ,  '2'   , '3'  ,  '4'   , '5' ,   '6',  'PROVISION']
-sel1 = sel1[colOrder]
+if(len(sel1.columns)>1):
+    sel1 = sel1[colOrder]
 st.subheader("Filtered data will appear below 👇 ")
 st.text("")
 
