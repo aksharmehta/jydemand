@@ -175,17 +175,20 @@ def processFiles(df1, df2, dfProv):
         filteredDF.loc[(filteredDF['Sz'] == 4) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.013
         filteredDF.loc[(filteredDF['Sz'] == 4.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.015
 
+        filteredDF.loc[(filteredDF['Sz'] == 5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.04
         filteredDF.loc[(filteredDF['Sz'] == 5) & (filteredDF['Lt'] == 0), 'StockPcs'] = filteredDF["Stock(cts)"] / 0.016
         
         filteredDF.loc[(filteredDF['Sz'] == 5.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.018
         filteredDF.loc[(filteredDF['Sz'] == 6) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.02
         filteredDF.loc[(filteredDF['Sz'] == 6.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.025
 
+        filteredDF.loc[(filteredDF['Sz'] == 7) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.05
         filteredDF.loc[(filteredDF['Sz'] == 7) & (filteredDF['Lt'] == 0), 'StockPcs'] = filteredDF["Stock(cts)"] / 0.03
 
         filteredDF.loc[(filteredDF['Sz'] == 7.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.035
         filteredDF.loc[(filteredDF['Sz'] == 8) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.04
 
+        filteredDF.loc[(filteredDF['Sz'] == 8.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.09 #for Fancy
         filteredDF.loc[(filteredDF['Sz'] == 8.5) & (filteredDF['Lt'] == 0), 'StockPcs'] = filteredDF["Stock(cts)"] / 0.045
 
         filteredDF.loc[(filteredDF['Sz'] == 9) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.05
@@ -198,7 +201,11 @@ def processFiles(df1, df2, dfProv):
         filteredDF.loc[(filteredDF['Sz'] == 12.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.11
         filteredDF.loc[(filteredDF['Sz'] == 13) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.12
         filteredDF.loc[(filteredDF['Sz'] == 13.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.13
-
+        filteredDF.loc[(filteredDF['Sz'] == 0.15) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.14
+        filteredDF.loc[(filteredDF['Sz'] == 0.20) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.19
+        filteredDF.loc[(filteredDF['Sz'] == 0.25) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.24
+        filteredDF.loc[(filteredDF['Sz'] == 0.30) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.30
+        filteredDF.loc[(filteredDF['Sz'] == 0.40) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.39
 
 
         
@@ -251,7 +258,6 @@ def processFiles(df1, df2, dfProv):
         unPivot["DiffPROVISION"] = 0
 
 
-        print(unPivot.loc[unPivot['Sz'] ==0.04])
 
 
         unPivot.loc[unPivot['NetToBuy'] <= 0, ['RmQty', '1+COD','ANAD','SJMG','ZSELF','1+', "1","2","3","4","5","6","PROVISION"]] = 0
@@ -384,6 +390,7 @@ def processFiles(df1, df2, dfProv):
         unPivot.loc[(unPivot['PROVISION'] < 0),"PROVISION"] = 0
         unPivot.loc[(unPivot['PROVISION'] > 0) & (unPivot['DiffPROVISION'] < 0),"StockPcs"] = 0
 
+        print(unPivot.loc[unPivot['Lt'] ==2])
 
 
         unPivot1 = unPivot.query('RmQty > 0 and RmCode != "IGNORE"')
@@ -533,6 +540,7 @@ writer.close()
 
 output.seek(0)
 
+st.header("Click the button below to download the Demand File:")
 st.download_button(
     label="Download Demand File",
     data=output.getvalue(),
