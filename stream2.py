@@ -77,9 +77,9 @@ def processFiles(df1, df2, dfProv):
         df1.columns =[column.replace(" ", "_") for column in df1.columns] 
         df2.columns =[column.replace(" ", "_") for column in df2.columns] 
         dfProv.columns =[column.replace(" ", "_") for column in dfProv.columns]
-        #dfProv['RmQty'] = dfProv['Total_Req(cts)'] / dfProv['Pointer']
-        #dfProv.fillna(0, inplace=True)
-        #dfProv['RmQty'] = dfProv['RmQty'].dropna().apply(np.int64)
+        dfProv['RmQty'] = dfProv['Total_Req(cts)'] / dfProv['Pointer']
+        dfProv.fillna(0, inplace=True)
+        dfProv['RmQty'] = dfProv['RmQty'].dropna().apply(np.int64)
         dfProv = dfProv[["RmCode", "Sz","Lt","Wdth","Total_Req(cts)","Stock(cts)","Net(cts)","RmQty","BAGGING_PRIORITIES"]]
         dfProv.fillna(0, inplace=True)
 
