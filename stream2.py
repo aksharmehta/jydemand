@@ -76,10 +76,12 @@ def pointerFiles(office, factory):
 def processFiles(df1, df2, dfProv):
         df1.columns =[column.replace(" ", "_") for column in df1.columns] 
         df2.columns =[column.replace(" ", "_") for column in df2.columns] 
-        dfProv.columns =[column.replace(" ", "_") for column in dfProv.columns] 
+        dfProv.columns =[column.replace(" ", "_") for column in dfProv.columns]
+        #dfProv['RmQty'] = dfProv['Total_Req(cts)'] / dfProv['Pointer']
+        #dfProv.fillna(0, inplace=True)
+        #dfProv['RmQty'] = dfProv['RmQty'].dropna().apply(np.int64)
         dfProv = dfProv[["RmCode", "Sz","Lt","Wdth","Total_Req(cts)","Stock(cts)","Net(cts)","RmQty","BAGGING_PRIORITIES"]]
         dfProv.fillna(0, inplace=True)
-
 
         dfP = pd.merge(df1, df2, how = "left", left_on = "Flute_Bag", right_on = "Flute_Bag_No")
 
@@ -94,7 +96,7 @@ def processFiles(df1, df2, dfProv):
         #dfP.to_excel("Bagging List with Priority.xlsx")
         filteredDF1 = dfP[["RmCode", "Sz","Lt","Wdth","Total_Req(cts)","Stock(cts)","Net(cts)","RmQty","BAGGING_PRIORITIES"]].copy()
         filteredDF = filteredDF1.append(dfProv, ignore_index=True)
-        #print(filteredDF)
+        #print(filteredDF.query("Sz == 5 and RmCode == 'PSNR3'"))
 
         filteredDF["BAGGING_PRIORITIES"] = filteredDF["BAGGING_PRIORITIES"].fillna("None")
         filteredDF["BAGGING_PRIORITIES"] = filteredDF["BAGGING_PRIORITIES"].astype(str)
@@ -175,7 +177,7 @@ def processFiles(df1, df2, dfProv):
         filteredDF.loc[(filteredDF['Sz'] == 4) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.013
         filteredDF.loc[(filteredDF['Sz'] == 4.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.015
 
-        filteredDF.loc[(filteredDF['Sz'] == 5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.04
+        filteredDF.loc[(filteredDF['Sz'] == 5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.03
         filteredDF.loc[(filteredDF['Sz'] == 5) & (filteredDF['Lt'] == 0), 'StockPcs'] = filteredDF["Stock(cts)"] / 0.016
         
         filteredDF.loc[(filteredDF['Sz'] == 5.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.018
@@ -218,7 +220,8 @@ def processFiles(df1, df2, dfProv):
 
         filteredDF["StockPcs"] = filteredDF["StockPcs"].round(0)
        
-       
+        #print(filteredDF.query("Sz == 5 and RmCode == 'PSNR3'"))
+
 
         #filteredDF("StockPcs") = filteredDF("StockPcs").asType(int).round(0)
 
@@ -232,6 +235,8 @@ def processFiles(df1, df2, dfProv):
         #print(dfPivot)
         new_order = ['RmQty', '1+COD','ANAD','SJMG','ZSELF','1+', '1','2','3','4','5','6','PROVISION']
 
+
+        #print(dfPivot.query("Sz == 5 and RmCode == 'PSNR3'"))
 
         dfPivot = dfPivot.reindex(new_order,axis = 1)
         #dfPivot.style.apply(highlight_max, subset = ["1+","1"])
@@ -258,7 +263,7 @@ def processFiles(df1, df2, dfProv):
         unPivot["DiffPROVISION"] = 0
 
 
-
+        #print(unPivot.query("Sz == 5 and RmCode == 'PSNR3'"))
 
         unPivot.loc[unPivot['NetToBuy'] <= 0, ['RmQty', '1+COD','ANAD','SJMG','ZSELF','1+', "1","2","3","4","5","6","PROVISION"]] = 0
 
@@ -390,7 +395,7 @@ def processFiles(df1, df2, dfProv):
         unPivot.loc[(unPivot['PROVISION'] < 0),"PROVISION"] = 0
         unPivot.loc[(unPivot['PROVISION'] > 0) & (unPivot['DiffPROVISION'] < 0),"StockPcs"] = 0
 
-        #print(unPivot.loc[unPivot['Lt'] ==2])
+        print(unPivot.loc[unPivot['Lt'] ==2.6])
 
 
         unPivot1 = unPivot.query('RmQty > 0 and RmCode != "IGNORE"')
