@@ -46,6 +46,237 @@ def aggrid_interactive_table(df: pd.DataFrame):
     return selection
 
 
+
+def datewise(df1, df2):
+    
+    df1.columns =[column.replace(" ", "_") for column in df1.columns] 
+    df2.columns =[column.replace(" ", "_") for column in df2.columns] 
+    dfP = pd.merge(df1, df2, how = "left", left_on = "Flute_Bag", right_on = "Flute_Bag_No")
+    dfP = dfP.query('CTG_x=="D" and BAGGING_PRIORITIES.notnull()')
+    dfP['PPC_DIAMOND_PLANNING_DATES'] =  pd.to_datetime(dfP['PPC_DIAMOND_PLANNING_DATES'])
+    dfP.columns =[column.replace('PPC_DIAMOND_PLANNING_DATES', "Delivery") for column in dfP.columns]
+
+    s =  (pd.to_datetime('today').normalize() - dfP['Delivery']).dt.days*-1
+
+    dfP['Date_Bin'] = pd.cut(s, [-500,  -7,0, 3, 7, 14, 30, np.inf],
+                        labels=['>7 OD', '1-7 OD','next 3 days', '4 to 7 days', '8 to 14 days','15 to 30 days', '30 to 90 days'],
+                        include_lowest=True)
+
+    filteredDF = dfP[["RmCode", "Sz","Lt","Wdth","Total_Req(cts)","Stock(cts)","Net(cts)","RmQty","Date_Bin"]].copy()
+
+    filteredDF["Date_Bin"] = filteredDF["Date_Bin"].astype(str)
+
+    listPriority = set(filteredDF["Date_Bin"].tolist())
+
+    stockP = set(filteredDF["Stock(cts)"].tolist())
+
+            #print(listPriority)
+
+            #for value in listPriority:
+            #   filteredDF[value] = 0
+
+    filteredDF['p'] = filteredDF["Total_Req(cts)"]/filteredDF["RmQty"]
+    #filteredDF.loc[(filteredDF['Stock(cts)'] > 0) & (filteredDF['Stock(cts)'] in  items)) , 'StockPcs'] = filteredDF[(filteredDF['Stock(cts)'] > 0) & (filteredDF['Stock(cts)'] in  items)
+
+
+    #if((filteredDF["p"]) < 0.01):
+            #   filteredDF["StockPcs"] = filteredDF["Stock(cts)"] / ((filteredDF["Total_Req(cts)"]/filteredDF["RmQty"]).round(3))
+    #elif((filteredDF["p"]) < 0.1 & filteredDF['p'] > 0.09):
+            #   filteredDF["StockPcs"] = filteredDF["Stock(cts)"] / ((filteredDF["Total_Req(cts)"]/filteredDF["RmQty"]).round(2))
+    #   filteredDF["StockPcs"] = filteredDF["Stock(cts)"] / ((filteredDF["Total_Req(cts)"]/filteredDF["RmQty"]).round(1))
+
+
+    filteredDF.loc[(filteredDF['p'] >0.01) & (filteredDF['p'] <= 0.09) , 'StockPcs'] = filteredDF["Stock(cts)"] / ((filteredDF["Total_Req(cts)"]/filteredDF["RmQty"]).round(2))
+    filteredDF.loc[(filteredDF['p'] >0.09) , 'StockPcs'] = filteredDF["Stock(cts)"] / ((filteredDF["Total_Req(cts)"]/filteredDF["RmQty"]).round(2))
+
+
+    filteredDF.loc[(filteredDF['Sz'] == 0.04) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.003
+    filteredDF.loc[(filteredDF['Sz'] == 0.03) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.004
+    filteredDF.loc[(filteredDF['Sz'] == 0.02) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.005
+    filteredDF.loc[(filteredDF['Sz'] == 0.01) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.006
+    filteredDF.loc[(filteredDF['Sz'] == 1) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.007
+    filteredDF.loc[(filteredDF['Sz'] == 1.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.007
+    filteredDF.loc[(filteredDF['Sz'] == 2) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.008
+    filteredDF.loc[(filteredDF['Sz'] == 2.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.009
+    filteredDF.loc[(filteredDF['Sz'] == 3) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.01
+    filteredDF.loc[(filteredDF['Sz'] == 3.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.012
+    filteredDF.loc[(filteredDF['Sz'] == 4) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.013
+    filteredDF.loc[(filteredDF['Sz'] == 4.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.015
+
+    filteredDF.loc[(filteredDF['Sz'] == 5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.03
+    filteredDF.loc[(filteredDF['Sz'] == 5) & (filteredDF['Lt'] == 0), 'StockPcs'] = filteredDF["Stock(cts)"] / 0.016
+
+    filteredDF.loc[(filteredDF['Sz'] == 5.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.018
+    filteredDF.loc[(filteredDF['Sz'] == 6) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.02
+    filteredDF.loc[(filteredDF['Sz'] == 6.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.025
+
+    filteredDF.loc[(filteredDF['Sz'] == 7) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.05
+    filteredDF.loc[(filteredDF['Sz'] == 7) & (filteredDF['Lt'] == 0), 'StockPcs'] = filteredDF["Stock(cts)"] / 0.03
+
+    filteredDF.loc[(filteredDF['Sz'] == 7.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.035
+    filteredDF.loc[(filteredDF['Sz'] == 8) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.04
+
+    filteredDF.loc[(filteredDF['Sz'] == 8.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.09 #for Fancy
+    filteredDF.loc[(filteredDF['Sz'] == 8.5) & (filteredDF['Lt'] == 0), 'StockPcs'] = filteredDF["Stock(cts)"] / 0.045
+
+    filteredDF.loc[(filteredDF['Sz'] == 9) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.05
+    filteredDF.loc[(filteredDF['Sz'] == 9.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.055
+    filteredDF.loc[(filteredDF['Sz'] == 10) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.06
+    filteredDF.loc[(filteredDF['Sz'] == 10.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.07   
+    filteredDF.loc[(filteredDF['Sz'] == 11) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.08
+    filteredDF.loc[(filteredDF['Sz'] == 11.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.09
+    filteredDF.loc[(filteredDF['Sz'] == 12) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.1
+    filteredDF.loc[(filteredDF['Sz'] == 12.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.11
+    filteredDF.loc[(filteredDF['Sz'] == 13) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.12
+    filteredDF.loc[(filteredDF['Sz'] == 13.5) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.13
+    filteredDF.loc[(filteredDF['Sz'] == 0.15) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.14
+    filteredDF.loc[(filteredDF['Sz'] == 0.20) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.19
+    filteredDF.loc[(filteredDF['Sz'] == 0.25) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.24
+    filteredDF.loc[(filteredDF['Sz'] == 0.30) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.30
+    filteredDF.loc[(filteredDF['Sz'] == 0.40) , 'StockPcs'] = filteredDF["Stock(cts)"] / 0.39
+
+
+
+    filteredDF["StockPcs"] = filteredDF["StockPcs"].round(0)
+
+
+    listPriority1 = {'>7 OD', '1-7 OD','next 3 days', '4 to 7 days', '8 to 14 days','15 to 30 days', '30 to 90 days'}
+
+
+    for i in listPriority1:
+            add_df = {"RmCode":"IGNORE", "Sz":200,"Lt":1,"Wdth":1,"Total_Req(cts)":1,"Stock(cts)":5,"Net(cts)":2,"RmQty":10,"Date_Bin": i}
+            filteredDF = filteredDF.append(add_df,ignore_index = True)
+
+
+    add_df4 = {"RmCode":"IGNORE", "Sz":200,"Lt":1,"Wdth":1,"Total_Req(cts)":1,"Stock(cts)":5,"Net(cts)":2,"RmQty":10,"Date_Bin": '>7 OD'}
+    filteredDF = filteredDF.append(add_df4,ignore_index = True)
+
+    add_df5 = {"RmCode":"IGNORE", "Sz":200,"Lt":1,"Wdth":1,"Total_Req(cts)":1,"Stock(cts)":5,"Net(cts)":2,"RmQty":10,"Date_Bin": '1-7 OD'}
+    filteredDF = filteredDF.append(add_df5,ignore_index = True)
+
+    add_df6 = {"RmCode":"IGNORE", "Sz":200,"Lt":1,"Wdth":1,"Total_Req(cts)":1,"Stock(cts)":5,"Net(cts)":2,"RmQty":10,"Date_Bin": 'next 3 days'}
+    filteredDF = filteredDF.append(add_df6,ignore_index = True)
+
+    add_df8 = {"RmCode":"IGNORE", "Sz":200,"Lt":1,"Wdth":1,"Total_Req(cts)":1,"Stock(cts)":5,"Net(cts)":2,"RmQty":10,"Date_Bin": '4 to 7 days'}
+    filteredDF = filteredDF.append(add_df8,ignore_index = True)
+
+    add_df9 = {"RmCode":"IGNORE", "Sz":200,"Lt":1,"Wdth":1,"Total_Req(cts)":1,"Stock(cts)":5,"Net(cts)":2,"RmQty":10,"Date_Bin": '8 to 14 days'}
+    filteredDF = filteredDF.append(add_df9,ignore_index = True)
+
+    add_df10 = {"RmCode":"IGNORE", "Sz":200,"Lt":1,"Wdth":1,"Total_Req(cts)":1,"Stock(cts)":5,"Net(cts)":2,"RmQty":10,"Date_Bin": '15 to 30 days'}
+    filteredDF = filteredDF.append(add_df10,ignore_index = True)
+
+    add_df11 = {"RmCode":"IGNORE", "Sz":200,"Lt":1,"Wdth":1,"Total_Req(cts)":1,"Stock(cts)":5,"Net(cts)":2,"RmQty":10,"Date_Bin": '30 to 90 days'}
+    filteredDF = filteredDF.append(add_df11,ignore_index = True)
+
+            #filteredDF("StockPcs") = filteredDF("StockPcs").asType(int).round(0)
+
+    for value in listPriority:
+        filteredDF.loc[filteredDF['Date_Bin'] == value, str(value)] = filteredDF['RmQty']
+
+    dfPivot = pd.pivot_table(filteredDF, index = ["RmCode", "Sz", "Lt", "Wdth", "StockPcs"], values = ['RmQty','>7 OD', '1-7 OD','next 3 days', '4 to 7 days'], aggfunc =np.sum)
+        #print(dfPivot)
+    new_order = ['RmQty', '>7 OD', '1-7 OD','next 3 days', '4 to 7 days', '8 to 14 days','15 to 30 days', '30 to 90 days']
+    dfPivot = dfPivot.reindex(new_order,axis = 1)
+
+    dfPivot.columns = dfPivot.columns.tolist()
+
+
+    unPivot = pd.DataFrame(dfPivot.to_records())
+
+    unPivot["NetToBuy"] = unPivot["RmQty"] - unPivot["StockPcs"]
+    unPivot["Diff"] = 0
+
+    unPivot.loc[unPivot['NetToBuy'] <= 0, ['RmQty', '>7 OD', '1-7 OD','next 3 days', '4 to 7 days', '8 to 14 days','15 to 30 days', '30 to 90 days']] = 0
+
+    unPivot.loc[unPivot['RmQty'] > 0, ['RmQty']] = unPivot['RmQty'] - unPivot['StockPcs']
+    #unPivot.loc[unPivot['8 to 14 days'] <=unPivot['RmQty'] , ['Diff','RmQty', '8 to 14 days']] = [unPivot['RmQty'],unPivot["RmQty"]-unPivot['8 to 14 days'],unPivot['8 to 14 days']-unPivot["Diff"]]
+
+
+
+
+    unPivot["Diff9"] = unPivot["StockPcs"]-unPivot[">7 OD"]
+    unPivot.loc[(unPivot['>7 OD'] > 0) & (unPivot['StockPcs'] > 0), ">7 OD"] = unPivot['>7 OD'] - unPivot['StockPcs']
+    unPivot.loc[(unPivot['>7 OD'] > 0) & unPivot['StockPcs'] > 0 & (unPivot['Diff9'] == unPivot['StockPcs']), "StockPcs"] = 0
+    unPivot.loc[(unPivot['>7 OD'] > 0) & (unPivot['Diff9'] > 0) & (unPivot['StockPcs'] > 0), "StockPcs"] = unPivot['StockPcs'] - unPivot['Diff9']
+    #New code
+    unPivot.loc[(unPivot['>7 OD'] < 0) & (unPivot['Diff9'] > 0),"StockPcs"] = unPivot['Diff9']
+    unPivot.loc[(unPivot['>7 OD'] < 0),">7 OD"] = 0
+    unPivot.loc[(unPivot['>7 OD'] > 0) & (unPivot['Diff9'] < 0),"StockPcs"] = 0
+
+
+    unPivot["Diff11"] = unPivot["StockPcs"]-unPivot["1-7 OD"]
+    unPivot.loc[(unPivot['1-7 OD'] > 0) & (unPivot['StockPcs'] > 0), "1-7 OD"] = unPivot['1-7 OD'] - unPivot['StockPcs']
+    unPivot.loc[(unPivot['1-7 OD'] > 0) & unPivot['StockPcs'] > 0 & (unPivot['Diff11'] == unPivot['StockPcs']), "StockPcs"] = 0
+    unPivot.loc[(unPivot['1-7 OD'] > 0) & (unPivot['Diff11'] > 0) & (unPivot['StockPcs'] > 0), "StockPcs"] = unPivot['StockPcs'] - unPivot['Diff11']
+    #New code
+    unPivot.loc[(unPivot['1-7 OD'] < 0) & (unPivot['Diff11'] > 0),"StockPcs"] = unPivot['Diff11']
+    unPivot.loc[(unPivot['1-7 OD'] < 0),"1-7 OD"] = 0
+    unPivot.loc[(unPivot['1-7 OD'] > 0) & (unPivot['Diff11'] < 0),"StockPcs"] = 0
+
+
+
+    unPivot["Diff12"] = unPivot["StockPcs"]-unPivot["next 3 days"]
+    unPivot.loc[(unPivot['next 3 days'] > 0) & (unPivot['StockPcs'] > 0), "next 3 days"] = unPivot['next 3 days'] - unPivot['StockPcs']
+    unPivot.loc[(unPivot['next 3 days'] > 0) & unPivot['StockPcs'] > 0 & (unPivot['Diff12'] == unPivot['StockPcs']), "StockPcs"] = 0
+    unPivot.loc[(unPivot['next 3 days'] > 0) & (unPivot['Diff12'] > 0) & (unPivot['StockPcs'] > 0), "StockPcs"] = unPivot['StockPcs'] - unPivot['Diff12']
+    #New code
+    unPivot.loc[(unPivot['next 3 days'] < 0) & (unPivot['Diff12'] > 0),"StockPcs"] = unPivot['Diff12']
+    unPivot.loc[(unPivot['next 3 days'] < 0),"next 3 days"] = 0
+    unPivot.loc[(unPivot['next 3 days'] > 0) & (unPivot['Diff12'] < 0),"StockPcs"] = 0
+
+    unPivot["Diff15"] = unPivot["StockPcs"]-unPivot["4 to 7 days"]
+    unPivot.loc[(unPivot['4 to 7 days'] > 0) & (unPivot['StockPcs'] > 0), "4 to 7 days"] = unPivot['4 to 7 days'] - unPivot['StockPcs']
+    unPivot.loc[(unPivot['4 to 7 days'] > 0) & unPivot['StockPcs'] > 0 & (unPivot['Diff15'] == unPivot['StockPcs']), "StockPcs"] = 0
+    unPivot.loc[(unPivot['4 to 7 days'] > 0) & (unPivot['Diff15'] > 0) & (unPivot['StockPcs'] > 0), "StockPcs"] = unPivot['StockPcs'] - unPivot['Diff15']
+    #New code
+    unPivot.loc[(unPivot['4 to 7 days'] < 0) & (unPivot['Diff15'] > 0),"StockPcs"] = unPivot['Diff15']
+    unPivot.loc[(unPivot['4 to 7 days'] < 0),"4 to 7 days"] = 0
+    unPivot.loc[(unPivot['4 to 7 days'] > 0) & (unPivot['Diff15'] < 0),"StockPcs"] = 0
+
+
+
+    unPivot["Diff"] = unPivot["StockPcs"]-unPivot["8 to 14 days"]
+    unPivot.loc[(unPivot['8 to 14 days'] > 0) & (unPivot['StockPcs'] > 0), "8 to 14 days"] = unPivot['8 to 14 days'] - unPivot['StockPcs']
+    unPivot.loc[(unPivot['8 to 14 days'] > 0) & unPivot['StockPcs'] > 0 & (unPivot['Diff'] == unPivot['StockPcs']), "StockPcs"] = 0
+    unPivot.loc[(unPivot['8 to 14 days'] > 0) & (unPivot['Diff'] > 0) & (unPivot['StockPcs'] > 0), "StockPcs"] = unPivot['StockPcs'] - unPivot['Diff']
+    #New code
+    unPivot.loc[(unPivot['8 to 14 days'] < 0) & (unPivot['Diff'] > 0),"StockPcs"] = unPivot['Diff']
+    unPivot.loc[(unPivot['8 to 14 days'] < 0),"8 to 14 days"] = 0
+    unPivot.loc[(unPivot['8 to 14 days'] > 0) & (unPivot['Diff'] < 0),"StockPcs"] = 0
+
+    unPivot["Diff1"] = unPivot["StockPcs"]-unPivot['15 to 30 days']
+    unPivot.loc[(unPivot['15 to 30 days'] > 0) & (unPivot['StockPcs'] > 0), '15 to 30 days'] = unPivot['15 to 30 days'] - unPivot['StockPcs']
+    unPivot.loc[(unPivot['15 to 30 days'] > 0) & unPivot['StockPcs'] > 0 & (unPivot['Diff1'] == unPivot['StockPcs']), "StockPcs"] = 0
+    #unPivot.loc[(unPivot['Diff1'] <= 0) & (unPivot['StockPcs'] > 0), "StockPcs"] = 0
+    unPivot.loc[(unPivot['15 to 30 days'] > 0) & (unPivot['Diff1'] > 0) & (unPivot['StockPcs'] > 0), "StockPcs"] = unPivot['StockPcs'] - unPivot['Diff1']
+    #New code
+    unPivot.loc[(unPivot['15 to 30 days'] < 0) & (unPivot['Diff1'] > 0),"StockPcs"] = unPivot['Diff1']
+    unPivot.loc[(unPivot['15 to 30 days'] < 0),'15 to 30 days'] = 0
+    unPivot.loc[(unPivot['15 to 30 days'] > 0) & (unPivot['Diff1'] < 0),"StockPcs"] = 0
+
+    unPivot["Diff2"] = unPivot["StockPcs"]-unPivot['30 to 90 days']
+    unPivot.loc[(unPivot['30 to 90 days'] > 0) & (unPivot['StockPcs'] > 0), '30 to 90 days'] = unPivot['30 to 90 days'] - unPivot['StockPcs']
+    unPivot.loc[(unPivot['30 to 90 days'] > 0) & unPivot['StockPcs'] > 0 & (unPivot['Diff2'] == unPivot['StockPcs']), "StockPcs"] = 0
+    #unPivot.loc[(unPivot['Diff2'] <= 0) & (unPivot['StockPcs'] > 0), "StockPcs"] = 0
+    unPivot.loc[(unPivot['30 to 90 days'] > 0) & (unPivot['Diff2'] > 0) & (unPivot['StockPcs'] > 0), "StockPcs"] = unPivot['StockPcs'] - unPivot['Diff2']
+    #New code
+    unPivot.loc[(unPivot['30 to 90 days'] < 0) & (unPivot['Diff2'] > 0),"StockPcs"] = unPivot['Diff2']
+    unPivot.loc[(unPivot['30 to 90 days'] < 0),'30 to 90 days'] = 0
+    unPivot.loc[(unPivot['30 to 90 days'] > 0) & (unPivot['Diff2'] < 0),"StockPcs"] = 0
+
+
+
+
+
+    unPivot1 = unPivot.query('RmQty > 0 and RmCode != "IGNORE"')
+    pivoted = pd.pivot_table(unPivot1, index = ["RmCode", "Sz", "Lt", "Wdth", "StockPcs"], values = ['RmQty', '>7 OD', '1-7 OD','next 3 days', '4 to 7 days', '8 to 14 days','15 to 30 days', '30 to 90 days'], aggfunc =np.sum)
+    pivoted = pivoted.reindex(new_order,axis = 1)
+    return pivoted
+
+
+
+
 def _max_width_():
     max_width_str = f"max-width: 1800px;"
     st.markdown(
@@ -220,7 +451,7 @@ def processFiles(df1, df2, dfProv):
 
         filteredDF["StockPcs"] = filteredDF["StockPcs"].round(0)
        
-        #print(filteredDF.query("Sz == 5 and RmCode == 'PSNR3'"))
+        print(filteredDF.query("Sz == 7 and RmCode == 'PSNR2'"))
 
 
         #filteredDF("StockPcs") = filteredDF("StockPcs").asType(int).round(0)
@@ -395,7 +626,7 @@ def processFiles(df1, df2, dfProv):
         unPivot.loc[(unPivot['PROVISION'] < 0),"PROVISION"] = 0
         unPivot.loc[(unPivot['PROVISION'] > 0) & (unPivot['DiffPROVISION'] < 0),"StockPcs"] = 0
 
-        print(unPivot.loc[unPivot['Lt'] ==2.6])
+        print(unPivot.loc[unPivot['Lt'] ==3])
 
 
         unPivot1 = unPivot.query('RmQty > 0 and RmCode != "IGNORE"')
@@ -532,12 +763,14 @@ from st_aggrid import GridUpdateMode, DataReturnMode
 
 df = processFiles(office, factory, provision)
 pointerDF = pointerFiles(office, factory)
+dat = datewise(office,factory)
 
 output = BytesIO()
 writer = pd.ExcelWriter(output, engine='xlsxwriter')
 
 df.to_excel(writer, startrow = 0, merge_cells = False, sheet_name = "Sheet_1")
 pointerDF.to_excel(writer, startrow = 0, merge_cells = False, sheet_name = "Pointers", index = False)
+dat.to_excel(writer, startrow = 0, merge_cells = False, sheet_name = "Datewise")
 #workbook = writer.book
 #worksheet = writer.sheets["Sheet_1","Pointers"]
 
