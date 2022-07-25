@@ -167,18 +167,19 @@ def datewise(df1, df2):
     filteredDF = filteredDF.append(add_df10,ignore_index = True)
 
     add_df11 = {"RmCode":"IGNORE", "Sz":200,"Lt":1,"Wdth":1,"Total_Req(cts)":1,"Stock(cts)":5,"Net(cts)":2,"RmQty":10,"Date_Bin": '30 to 90 days'}
-
     filteredDF = filteredDF.append(add_df11,ignore_index = True)
 
     filteredDF.fillna(0, inplace=True)
 
                 #filteredDF("StockPcs") = filteredDF("StockPcs").asType(int).round(0)
-    print(filteredDF)
-    for value in listPriority:
+
+    for value in listPriority1:
         filteredDF.loc[filteredDF['Date_Bin'] == value, str(value)] = filteredDF['RmQty']
 
-    dfPivot = pd.pivot_table(filteredDF, index = ["RmCode", "Sz", "Lt", "Wdth", "StockPcs"], values = ['RmQty','>7 OD', '1-7 OD','next 3 days'], aggfunc =np.sum)
-    print(dfPivot)
+    
+    
+    dfPivot = pd.pivot_table(filteredDF, index = ["RmCode", "Sz", "Lt", "Wdth", "StockPcs"], values = ['RmQty','>7 OD', '1-7 OD','next 3 days','4 to 7 days', '8 to 14 days','15 to 30 days', '30 to 90 days'], aggfunc =np.sum)
+    #print(dfPivot)
     new_order = ['RmQty', '>7 OD', '1-7 OD','next 3 days', '4 to 7 days', '8 to 14 days','15 to 30 days', '30 to 90 days']
     dfPivot = dfPivot.reindex(new_order,axis = 1)
 
