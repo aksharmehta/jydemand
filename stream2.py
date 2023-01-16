@@ -312,11 +312,19 @@ def processFiles(df1, df2, dfProv):
         df1.columns =[column.replace(" ", "_") for column in df1.columns] 
         df2.columns =[column.replace(" ", "_") for column in df2.columns] 
         dfProv.columns =[column.replace(" ", "_") for column in dfProv.columns]
-        dfProv['RmQty'] = dfProv['Total_Req(cts)'] / dfProv['Pointer']
+        #dfProv['RmQty'] = dfProv['Total_Req(cts)'] / dfProv['Pointer']
         dfProv.fillna(0, inplace=True)
         dfProv['RmQty'] = dfProv['RmQty'].dropna().apply(np.int64)
+        #dfProv['SPc'] = dfProv['Stock(cts)'] / dfProv['Pointer']
+        dfProv['RmQty'] = dfProv['RmQty'].dropna().apply(np.int64)
+        #dfProv['SPc'] = dfProv['SPc'].dropna().apply(np.int64)
+        #dfProv['RmQty'] = dfProv['RmQty'] + dfProv['SPc']
+
+
         dfProv = dfProv[["RmCode", "Sz","Lt","Wdth","Total_Req(cts)","Stock(cts)","Net(cts)","RmQty","BAGGING_PRIORITIES"]]
         dfProv.fillna(0, inplace=True)
+        
+
 
         dfP = pd.merge(df1, df2, how = "left", left_on = "Flute_Bag", right_on = "Flute_Bag_No")
 
@@ -630,7 +638,7 @@ def processFiles(df1, df2, dfProv):
         unPivot.loc[(unPivot['PROVISION'] < 0),"PROVISION"] = 0
         unPivot.loc[(unPivot['PROVISION'] > 0) & (unPivot['DiffPROVISION'] < 0),"StockPcs"] = 0
 
-        print(unPivot.loc[unPivot['Lt'] ==3])
+        print(unPivot.loc[unPivot['Lt'] ==3.4])
 
 
         unPivot1 = unPivot.query('RmQty > 0 and RmCode != "IGNORE"')
@@ -916,4 +924,5 @@ c29, c30, c31 = st.columns([1, 1, 2])
 
 
 df_sum = dat.sum(numeric_only=True)
+df_sum.drop('RmQty', inplace = True)
 st.bar_chart(df_sum)
